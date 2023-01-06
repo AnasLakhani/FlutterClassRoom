@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "761723647545",
+    "project_id": "flutterclassroom-c132e",
+    "storage_bucket": "flutterclassroom-c132e.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:761723647545:android:cd9599f46eddc61c76ffe8",
+        "android_client_info": {
+          "package_name": "com.example.online_classroom"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "761723647545-09gp2r6nv76ubbk1koavkhc1ajrg7e3t.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAzmOBj0jPjFTq14UspogEKNfrGOxi0E9Y"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "761723647545-09gp2r6nv76ubbk1koavkhc1ajrg7e3t.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
