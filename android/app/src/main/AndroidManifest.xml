@@ -5,6 +5,11 @@
          In most cases you can leave this as-is, but you if you want to provide
          additional functionality it is fine to subclass or reimplement
          FlutterApplication and put your custom class here. -->
+
+          <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+
+
+          <uses-permission android:name="android.permission.INTERNET"/>
     <application
         
         android:label="Online Classroom App"
@@ -14,6 +19,8 @@
             android:name=".MainActivity"
             android:exported="true"
             android:launchMode="singleTop"
+            android:requestLegacyExternalStorage="true"
+            
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"

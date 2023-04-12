@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 class ClassRooms {
   String className;
   String description;
-  Account creator;
+  Account? creator;
   Color uiColor;
   List students;
 
@@ -50,7 +50,7 @@ Future<bool> getListClasses() async {
       ClassRooms(
         className: data["className"],
         description: data["description"],
-        creator: getAccount(data["creator"])!,
+        creator: getAccount(data["creator"]),
         uiColor: Color(int.parse(data["uiColor"])),
         students: makeStudentsAccountList(data["className"]),
         )

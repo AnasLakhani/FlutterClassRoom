@@ -1,34 +1,41 @@
 {
   "project_info": {
-    "project_number": "761723647545",
-    "project_id": "flutterclassroom-c132e",
-    "storage_bucket": "flutterclassroom-c132e.appspot.com"
+    "project_number": "670705353463",
+    "project_id": "myfsr-3b43a",
+    "storage_bucket": "myfsr-3b43a.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:761723647545:android:cd9599f46eddc61c76ffe8",
+        "mobilesdk_app_id": "1:670705353463:android:1d5e8d67efa41cc20149f2",
         "android_client_info": {
           "package_name": "com.example.online_classroom"
         }
       },
       "oauth_client": [
         {
-          "client_id": "761723647545-09gp2r6nv76ubbk1koavkhc1ajrg7e3t.apps.googleusercontent.com",
+          "client_id": "670705353463-vdqhd2f1oce5521cev4enjkqkh3kq9tb.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyAzmOBj0jPjFTq14UspogEKNfrGOxi0E9Y"
+          "current_key": "AIzaSyBockgY-cUWJTpTresJfDjYBbCqCf-ojTA"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "761723647545-09gp2r6nv76ubbk1koavkhc1ajrg7e3t.apps.googleusercontent.com",
+              "client_id": "670705353463-d9u8h05bdod80fhu051cuuajsc59qt1i.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "670705353463-f1s4dth2g0lm3umv8pvonrbu21oeguhb.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.googleclassroomClone"
+              }
             }
           ]
         }

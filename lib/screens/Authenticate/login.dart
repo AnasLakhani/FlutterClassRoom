@@ -32,110 +32,112 @@ class _LoginState extends State<Login> {
   // build func
   @override
   Widget build(BuildContext context) {
-
     // checking if not loading then show the page
-    return loading ? Loading() :Scaffold(
-        // appbar part
-        appBar: AppBar(
-          title: Text("Login",
-              style: TextStyle(color: Colors.black)),
-          backgroundColor: Colors.white,
-          actions: [
-            TextButton.icon(
-              onPressed: () {
-                widget.toggle_reg_log();
-              },
-              icon: Icon(Icons.person),
-              label: Text('Register'),
-              style: TextButton.styleFrom(foregroundColor: Colors.black),
-            )
-          ],
-        ),
+    return loading
+        ? Loading()
+        : Scaffold(
+            // appbar part
+            appBar: AppBar(
+              title: Text("Login", style: TextStyle(color: Colors.black)),
+              backgroundColor: Colors.white,
+              actions: [
+                TextButton.icon(
+                  onPressed: () {
+                    widget.toggle_reg_log();
+                  },
+                  icon: Icon(Icons.person),
+                  label: Text('Register'),
+                  style: TextButton.styleFrom(foregroundColor: Colors.black),
+                )
+              ],
+            ),
 
-        // body part
-        body: Container(
-          padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
-          child: Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  SizedBox(height: 20.0),
+            // body part
+            body: Container(
+              padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
+              child: Form(
+                  key: _formKey,
+                  child: Column(
+                    children: [
+                      SizedBox(height: 20.0),
 
-                  // textbox for email
-                  TextFormField(
-                    decoration: InputDecoration(labelText: "Email", border: OutlineInputBorder()),
-                    validator: (val) => val!.isEmpty ? 'Enter an email' : null,
-                    onChanged: (val) {
-                      setState(() {
-                        email = val;
-                      });
-                    },
-                  ),
-
-                  SizedBox(height: 20.0),
-
-                  // textbox for password
-                  TextFormField(
-                    decoration: InputDecoration(labelText: "Password", border: OutlineInputBorder()),
-                    obscureText: true,
-                    validator: (val) => val!.length < 6
-                        ? 'Enter a password 6+ chars long'
-                        : null,
-                    onChanged: (val) {
-                      setState(() {
-                        password = val;
-                      });
-                    },
-                  ),
-
-                  SizedBox(height: 20.0),
-
-                  // Login  button
-                  ElevatedButton(
-                    child: Text("Login",
-                        style: TextStyle(
-                            color: Colors.white, fontFamily: "Roboto",
-                            fontSize: 22)
-                    ),
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate()) {
-
-                        setState(() => loading = true);
-
-                        await updateAllData();
-
-                        // Logging into the account
-                        var result = await _auth.loginStudent(email, password);
-
-                        if (result == null) {
+                      // textbox for email
+                      TextFormField(
+                        decoration: InputDecoration(
+                            labelText: "Email", border: OutlineInputBorder()),
+                        validator: (val) =>
+                            val!.isEmpty ? 'Enter an email' : null,
+                        onChanged: (val) {
                           setState(() {
-                            loading = false;
-                            error = 'Some error in logging in! Please check again';
+                            email = val;
                           });
+                        },
+                      ),
 
+                      SizedBox(height: 20.0),
 
-                        }
-                        else {
-                          print("\t\t\tUser Logged in Successfully");
+                      // textbox for password
+                      TextFormField(
+                        decoration: InputDecoration(
+                            labelText: "Password",
+                            border: OutlineInputBorder()),
+                        obscureText: true,
+                        validator: (val) => val!.length < 6
+                            ? 'Enter a password 6+ chars long'
+                            : null,
+                        onChanged: (val) {
+                          setState(() {
+                            password = val;
+                          });
+                        },
+                      ),
 
-                          setState(() => loading = false);
-                        }
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.blue,
-                    ),
-                  ),
+                      SizedBox(height: 20.0),
 
-                  SizedBox(height: 12.0),
+                      // Login  button
+                      ElevatedButton(
+                        child: Text("Login",
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontFamily: "Roboto",
+                                fontSize: 22)),
+                        onPressed: () async {
+                          if (_formKey.currentState!.validate()) {
+                            setState(() => loading = true);
 
-                  // Prints error if any while logging in
-                  Text(
-                    error,
-                    style: TextStyle(color: Colors.red, fontSize: 14.0),
-                  )
-                ],
-              )),
-        ));
+                            await updateAllData();
+
+                            // Logging into the account
+                            var result =
+                                await _auth.loginStudent(email, password);
+
+                            if (result == null) {
+                              setState(() {
+                                loading = false;
+                                error =
+                                    'Some error in logging in! Please check again';
+                              });
+                            } else {
+                              print("\t\t\tUser Logged in Successfully");
+
+                              setState(() => loading = false);
+                            }
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                        ),
+                      ),
+
+                      SizedBox(height: 12.0),
+
+                      // Prints error if any while logging in
+                      Text(
+                        error,
+                        style: TextStyle(color: Colors.red, fontSize: 14.0),
+                      )
+                    ],
+                  )),
+            ));
   }
 }

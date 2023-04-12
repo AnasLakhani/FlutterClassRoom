@@ -4,14 +4,11 @@ import 'package:firebase_auth/firebase_auth.dart';
 class AuthService {
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-
   // Converts Firebase user to Custom User
   CustomUser? _convertUser(User? user) {
     if (user == null) {
       return null;
-    }
-    
-    else {
+    } else {
       return CustomUser(uid: user.uid, email: user.email);
     }
   }
@@ -23,7 +20,6 @@ class AuthService {
     return _auth.authStateChanges().map((User? user) => _convertUser(user));
   }
 
-
   // Sign out part
   Future signOut() async {
     await _auth.signOut();
@@ -32,12 +28,11 @@ class AuthService {
   // Register part with email and password
   Future registerStudent(String email, String password) async {
     try {
-      UserCredential result = await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      UserCredential result = await _auth.createUserWithEmailAndPassword(
+          email: email, password: password);
       User? user = result.user;
       return _convertUser(user);
-    }
-    
-    catch (e) {
+    } catch (e) {
       print("Error in registering");
       return null;
     }
@@ -46,12 +41,11 @@ class AuthService {
   // Login part with email and password
   Future loginStudent(String email, String password) async {
     try {
-      UserCredential result = await _auth.signInWithEmailAndPassword(email: email, password: password);
+      UserCredential result = await _auth.signInWithEmailAndPassword(
+          email: email, password: password);
       User? user = result.user;
       return _convertUser(user);
-    }
-    
-    catch (e) {
+    } catch (e) {
       print("Error in login");
       return null;
     }

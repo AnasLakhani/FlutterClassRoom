@@ -1,5 +1,7 @@
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:online_classroom/data/accounts.dart';
+import 'package:online_classroom/data/classrooms.dart';
 import 'package:online_classroom/screens/student_classroom/add_class.dart';
 import 'package:online_classroom/screens/student_classroom/wall_tab.dart';
 import 'package:online_classroom/screens/student_classroom/classes_tab.dart';
@@ -23,71 +25,80 @@ class _StudentHomePageState extends State<StudentHomePage> {
   }
 
   @override
+  void initState() {
+    // TODO: implement initState
+    subscribe();
+    super.initState();
+  }
+
+  Future<void> subscribe() async {
+    await FirebaseMessaging.instance.subscribeToTopic('ALL');
+  }
+
+  @override
   Widget build(BuildContext context) {
     final AuthService _auth = AuthService();
     final user = Provider.of<CustomUser?>(context);
     var account = getAccount(user!.uid);
 
-    final tabs = [
-      WallTab(),
-      TimelineTab(),
-      ClassesTab()
-    ];
+    final tabs = [WallTab(), TimelineTab(), ClassesTab()];
 
     return Scaffold(
-        appBar: AppBar(
-          elevation: 0.5,
-          title: Text(
-            "Online Classroom",
-            style: TextStyle(
-                color: Colors.black, fontFamily: "Roboto", fontSize: 22),
+      appBar: AppBar(
+        elevation: 0.5,
+        title: Text(
+          "Online Classroom",
+          style: TextStyle(
+              color: Colors.black, fontFamily: "Roboto", fontSize: 22),
+        ),
+        backgroundColor: Colors.white,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 20),
+            child: Text(
+              "Welcome, " + (account!.firstName as String),
+              style: TextStyle(color: Colors.black, fontSize: 16),
+            ),
           ),
-          backgroundColor: Colors.white,
-          actions: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20),
-              child: Text("Welcome, " + (account!.firstName as String),
-                style: TextStyle(color: Colors.black, fontSize: 16),
-              ),
+          IconButton(
+            icon: Icon(
+              Icons.logout,
+              color: Colors.black87,
+              size: 30,
             ),
-            IconButton(
-              icon: Icon(
-                Icons.logout,
-                color: Colors.black87,
-                size: 30,
-              ),
-              onPressed: () async {
-                await _auth.signOut();
-              },
-            ),
-          ],
-        ),
-        body: tabs[_selectedIndex],
-        bottomNavigationBar: BottomNavigationBar(
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
-              icon: Icon(Icons.feed),
-              label: 'Dashboard',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.book),
-              label: 'ClassWork',
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(Icons.home),
-              label: "Classes",
-            )
-          ],
-          currentIndex: _selectedIndex,
-          selectedItemColor: Colors.black,
-          onTap: _onItemTapped,
-        ),
+            onPressed: () async {
+              await _auth.signOut();
+            },
+          ),
+        ],
+      ),
+      body: tabs[_selectedIndex],
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.feed),
+            label: 'Dashboard',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.book),
+            label: 'ClassWork',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: "Classes",
+          )
+        ],
+        currentIndex: _selectedIndex,
+        selectedItemColor: Colors.black,
+        onTap: _onItemTapped,
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          Navigator.of(context).push(
-              MaterialPageRoute(
+          Navigator.of(context)
+              .push(MaterialPageRoute(
                 builder: (context) => AddClass(),
-              )).then((_) => setState(() {}));
+              ))
+              .then((_) => setState(() {}));
         },
         backgroundColor: Colors.blue,
         child: Icon(

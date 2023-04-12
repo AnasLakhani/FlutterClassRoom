@@ -1,16 +1,12 @@
-
-
-
 import 'package:online_classroom/data/accounts.dart';
 import 'package:online_classroom/data/announcements.dart';
 import 'package:online_classroom/data/attachments.dart';
 import 'package:online_classroom/data/classrooms.dart';
 import 'package:online_classroom/data/submissions.dart';
 
-Future<bool> updateAllData() async
-{
+Future<bool> updateAllData() async {
   print("\t\t\t\t\tupdate Started");
-  
+
   await getListAccount();
   await getStudentAndClasses();
   await getListClasses();
@@ -20,10 +16,8 @@ Future<bool> updateAllData() async
   await getAttachmentStudentsList();
   await getsubmissionList();
 
-
   print("\t\t\t\t\tUpdate Finished");
   return true;
-
 }
 
 

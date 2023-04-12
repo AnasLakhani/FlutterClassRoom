@@ -1,7 +1,10 @@
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:online_classroom/data/custom_user.dart';
 import 'package:online_classroom/screens/student_classroom/people_tab.dart';
 import 'package:provider/provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../student_classroom/classwork_tab.dart';
 import '../student_classroom/stream_tab.dart';
@@ -27,21 +30,30 @@ class _ClassRoomPageState extends State<ClassRoomPage> {
   }
 
   @override
+  void initState() {
+    subscribe();
+    super.initState();
+  }
+
+  Future<void> subscribe() async {
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+    //set the value
+    sharedPreferences.setString('class', widget.classRoom.className);
+    await FirebaseMessaging.instance
+        .subscribeToTopic('CLASS_${widget.classRoom.className}');
+    debugPrint('🔥 Subscribe to CLASS_${widget.classRoom.className}');
+  }
+
+  @override
   Widget build(BuildContext context) {
     final user = Provider.of<CustomUser?>(context);
     String className = widget.classRoom.className;
     Color uiColor = widget.uiColor;
 
     final tabs = [
-      StreamTab(
-        className: className,
-        uiColor: uiColor
-      ),
+      StreamTab(className: className, uiColor: uiColor),
       ClassWork(className),
-      PeopleTab(
-          classRoom: widget.classRoom,
-          uiColor: uiColor
-      )
+      PeopleTab(classRoom: widget.classRoom, uiColor: uiColor)
     ];
     return Scaffold(
       appBar: AppBar(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:online_classroom/data/accounts.dart';
 
 class Profile extends StatelessWidget {
-  Account user;
+  Account? user;
 
   Profile({required this.user});
 
@@ -13,14 +13,15 @@ class Profile extends StatelessWidget {
       child: Row(
         children: [
           SizedBox(width: 15),
-          CircleAvatar(
-            backgroundImage:
-            AssetImage("${user.userDp}"),
-          ),
+          user != null
+              ? CircleAvatar(
+                  backgroundImage: AssetImage("${user!.userDp}"),
+                )
+              : SizedBox(),
           SizedBox(
             width: 10,
           ),
-          Text(user.firstName! + " " + user.lastName!)
+          Text(user!.firstName! + " " + user!.lastName!)
         ],
       ),
     );

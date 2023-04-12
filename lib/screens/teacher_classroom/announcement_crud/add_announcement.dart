@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:online_classroom/data/accounts.dart';
 import 'package:online_classroom/data/custom_user.dart';
 import 'package:online_classroom/data/classrooms.dart';
@@ -18,7 +20,8 @@ import 'package:online_classroom/widgets/attachment_editor_composer.dart';
 import 'package:provider/provider.dart';
 import 'package:path/path.dart';
 import 'package:mime/mime.dart';
-
+//add http
+import 'package:http/http.dart' as http;
 
 class AddAnnouncement extends StatefulWidget {
   ClassRooms classRoom;
@@ -30,7 +33,6 @@ class AddAnnouncement extends StatefulWidget {
 }
 
 class _AddAnnouncementState extends State<AddAnnouncement> {
-
   String title = '';
   String description = '';
   String type = 'Notice';
@@ -49,18 +51,28 @@ class _AddAnnouncementState extends State<AddAnnouncement> {
   }
 
   Future addFile(String user, String className) async {
-    File? file;
-    final result = await FilePicker.platform.pickFiles(allowMultiple: false);
+    XFile? file;
 
-    if (result == null) return;
-    final path = result.files.single.path!;
+    final ImagePicker picker = ImagePicker();
+    // Capture a photo.
+    file = await picker.pickImage(source: ImageSource.gallery);
 
-    file = File(path);
+    // List<File> file = await pickImages();
 
-    final fileName = basename(file.path);
-    final destination = user+"/"+className+'/$fileName';
+    // final result = await FilePicker.platform.pickFiles(allowMultiple: false);
 
-    UploadTask? task = uploadFile(destination, file);
+    if (file == null) return;
+    // final path = result.files.single.path!;
+
+    // file = File(path);
+
+    //XFile to File
+    File files = File(file!.path);
+
+    final fileName = basename(files.path);
+    final destination = user + "/" + className + '/$fileName';
+
+    UploadTask? task = uploadFile(destination, files);
 
     if (task == null) return;
 
@@ -69,12 +81,14 @@ class _AddAnnouncementState extends State<AddAnnouncement> {
 
     print('Download-Link: $urlDownload');
 
-    String safeURL = urlDownload.replaceAll(new RegExp(r'[^\w\s]+'),'');
-    await AttachmentsDB().createAttachmentsDB(fileName, urlDownload, safeURL, lookupMimeType(fileName) as String);
+    String safeURL = urlDownload.replaceAll(new RegExp(r'[^\w\s]+'), '');
+    await AttachmentsDB().createAttachmentsDB(
+        fileName, urlDownload, safeURL, lookupMimeType(fileName) as String);
 
-    setState(() => attachments.add(Attachment(name: fileName, url: urlDownload,
-        type: lookupMimeType(fileName) as String
-    )));
+    setState(() => attachments.add(Attachment(
+        name: fileName,
+        url: urlDownload,
+        type: lookupMimeType(fileName) as String)));
   }
 
   // for form validation
@@ -87,7 +101,7 @@ class _AddAnnouncementState extends State<AddAnnouncement> {
     var account = getAccount(user!.uid);
 
     return Scaffold(
-      // appbar part
+        // appbar part
         appBar: AppBar(
           backgroundColor: widget.classRoom.uiColor,
           elevation: 0.5,
@@ -113,148 +127,198 @@ class _AddAnnouncementState extends State<AddAnnouncement> {
           padding: EdgeInsets.symmetric(vertical: 20.0, horizontal: 50.0),
           children: [
             Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  SizedBox(height: 20.0),
+                key: _formKey,
+                child: Column(
+                  children: [
+                    SizedBox(height: 20.0),
 
-                  TextFormField(
-                    decoration: InputDecoration(labelText: "Title", border: OutlineInputBorder()),
-                    validator: (val) => val!.isEmpty ? 'Enter a title' : null,
-                    onChanged: (val) {
-                      setState(() {
-                        title = val;
-                      });
-                    },
-                  ),
-
-                  SizedBox(height: 20.0),
-                  DropdownButtonFormField(
-                    decoration: InputDecoration(labelText: "Type", border: OutlineInputBorder()),
-                    value: type,
-                    onChanged: (newValue) {
-                      setState(() {
-                        type = newValue as String;
-                      });
-                    },
-                    items: ['Notice', 'Assignment'].map((location) {
-                      return DropdownMenuItem(
-                        child: new Text(location),
-                        value: location,
-                      );
-                    }).toList(),
-                  ),
-
-                  if(type == 'Assignment') SizedBox(height: 20.0),
-
-                  if(type == 'Assignment') DateTimeField(
-                    decoration: InputDecoration(labelText: "Due Date", border: OutlineInputBorder()),
-                    format: DateFormat('h:mm a EEE, MMM d, yyyy'),
-                    initialValue: DateTime.now(),
-                    onShowPicker: (context, currentValue) async {
-                      final date = await showDatePicker(
-                          context: context,
-                          firstDate: DateTime(1900),
-                          initialDate: DateTime.now(),
-                          lastDate: DateTime(2100));
-                      if (date != null) {
-                        final time = await showTimePicker(
-                          context: context,
-                          initialTime:
-                          TimeOfDay.fromDateTime(currentValue ?? DateTime.now()),
-                        );
-                        return DateTimeField.combine(date, time);
-                      } else {
-                        return currentValue;
-                      }
-                    },
-                    onChanged: (date) => dueDate = formatDate(date),
-                  ),
-
-                  SizedBox(height: 20.0),
-
-                  TextFormField(
-                    decoration: InputDecoration(labelText: "Description", border: OutlineInputBorder()),
-                    maxLines: 5,
-                    onChanged: (val) {
-                      setState(() {
-                        description = val;
-                      });
-                    },
-                  ),
-
-                  SizedBox(height: 10.0),
-                  Container(
-                      alignment: Alignment.centerLeft,
-                      padding: EdgeInsets.only(top: 15, bottom: 10),
-                      child: Text(
-                        "Attachments:",
-                        style: TextStyle(
-                            fontSize: 15, color: Colors.black, letterSpacing: 1, fontWeight: FontWeight.bold),
-                      )
-                  ),
-                  if(attachments.length > 0) AttachmentEditorComposer(attachmentList: attachments),
-
-
-                  OutlinedButton(
-                      onPressed: () {
-                        addFile(account!.email as String, widget.classRoom.className);
-                        setState(() => {});
+                    TextFormField(
+                      decoration: InputDecoration(
+                          labelText: "Title", border: OutlineInputBorder()),
+                      validator: (val) => val!.isEmpty ? 'Enter a title' : null,
+                      onChanged: (val) {
+                        setState(() {
+                          title = val;
+                        });
                       },
-                      child: Padding(
-                          padding: EdgeInsets.symmetric(vertical: 10, horizontal: 0),
-                          child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text("Add Attachment",
-                                    style: TextStyle(color: Colors.black87, fontSize: 14)),
-                                Icon(
-                                  Icons.add_circle_outline_outlined,
-                                  color: widget.classRoom.uiColor,
-                                  size: 32,
-                                )
-                              ]
-                          )
-                      )
-                  ),
-
-                  SizedBox(height: 20.0),
-
-                  // Login  button
-                  ElevatedButton(
-                    child: Text("Add",
-                        style: TextStyle(
-                        color: Colors.white, fontFamily: "Roboto",
-                            fontSize: 22)
                     ),
-                    onPressed: () async {
-                      if (_formKey.currentState!.validate())  {
 
-                        await AnnouncementDB(user: user).addAnnouncements(title, type, description, widget.classRoom.className, dateTime, dueDate);
+                    SizedBox(height: 20.0),
+                    DropdownButtonFormField(
+                      decoration: InputDecoration(
+                          labelText: "Type", border: OutlineInputBorder()),
+                      value: type,
+                      onChanged: (newValue) {
+                        setState(() {
+                          type = newValue as String;
+                        });
+                      },
+                      items: ['Notice', 'Assignment'].map((location) {
+                        return DropdownMenuItem(
+                          child: new Text(location),
+                          value: location,
+                        );
+                      }).toList(),
+                    ),
 
-                        for(int i=0; i<attachments.length; i++) {
-                          String safeURL = attachments[i].url.replaceAll(new RegExp(r'[^\w\s]+'),'');
+                    if (type == 'Assignment') SizedBox(height: 20.0),
 
-                          await AttachmentsDB().createAttachAnnounceDB(title, attachments[i].url, safeURL);
-                        }
-
-                        if(type == 'Assignment') {
-                          for (int index = 0; index < widget.classRoom.students.length; index++) {
-                            await SubmissionDB().addSubmissions(widget.classRoom.students[index].uid, widget.classRoom.className, title);
+                    if (type == 'Assignment')
+                      DateTimeField(
+                        decoration: InputDecoration(
+                            labelText: "Due Date",
+                            border: OutlineInputBorder()),
+                        format: DateFormat('h:mm a EEE, MMM d, yyyy'),
+                        initialValue: DateTime.now(),
+                        onShowPicker: (context, currentValue) async {
+                          final date = await showDatePicker(
+                              context: context,
+                              firstDate: DateTime(1900),
+                              initialDate: DateTime.now(),
+                              lastDate: DateTime(2100));
+                          if (date != null) {
+                            final time = await showTimePicker(
+                              context: context,
+                              initialTime: TimeOfDay.fromDateTime(
+                                  currentValue ?? DateTime.now()),
+                            );
+                            return DateTimeField.combine(date, time);
+                          } else {
+                            return currentValue;
                           }
-                        }
-                        await updateAllData();
+                        },
+                        onChanged: (date) => dueDate = formatDate(date),
+                      ),
 
-                        Navigator.of(context).pop();
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: widget.classRoom.uiColor,
-                      minimumSize: Size(150, 50),
+                    SizedBox(height: 20.0),
+
+                    TextFormField(
+                      decoration: InputDecoration(
+                          labelText: "Description",
+                          border: OutlineInputBorder()),
+                      maxLines: 5,
+                      onChanged: (val) {
+                        setState(() {
+                          description = val;
+                        });
+                      },
                     ),
-                  )
-                ],
-              ))],
+
+                    SizedBox(height: 10.0),
+                    Container(
+                        alignment: Alignment.centerLeft,
+                        padding: EdgeInsets.only(top: 15, bottom: 10),
+                        child: Text(
+                          "Attachments:",
+                          style: TextStyle(
+                              fontSize: 15,
+                              color: Colors.black,
+                              letterSpacing: 1,
+                              fontWeight: FontWeight.bold),
+                        )),
+                    if (attachments.length > 0)
+                      AttachmentEditorComposer(attachmentList: attachments),
+
+                    OutlinedButton(
+                        onPressed: () {
+                          addFile(account!.email as String,
+                              widget.classRoom.className);
+                          setState(() => {});
+                        },
+                        child: Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: 10, horizontal: 0),
+                            child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text("Add Attachment",
+                                      style: TextStyle(
+                                          color: Colors.black87, fontSize: 14)),
+                                  Icon(
+                                    Icons.add_circle_outline_outlined,
+                                    color: widget.classRoom.uiColor,
+                                    size: 32,
+                                  )
+                                ]))),
+
+                    SizedBox(height: 20.0),
+
+                    // Login  button
+                    ElevatedButton(
+                      child: Text("Add",
+                          style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: "Roboto",
+                              fontSize: 22)),
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          await AnnouncementDB(user: user).addAnnouncements(
+                              title,
+                              type,
+                              description,
+                              widget.classRoom.className,
+                              dateTime,
+                              dueDate);
+
+                          for (int i = 0; i < attachments.length; i++) {
+                            String safeURL = attachments[i]
+                                .url
+                                .replaceAll(new RegExp(r'[^\w\s]+'), '');
+
+                            await AttachmentsDB().createAttachAnnounceDB(
+                                title, attachments[i].url, safeURL);
+                          }
+
+                          if (type == 'Assignment') {
+                            for (int index = 0;
+                                index < widget.classRoom.students.length;
+                                index++) {
+                              await SubmissionDB().addSubmissions(
+                                  widget.classRoom.students[index].uid,
+                                  widget.classRoom.className,
+                                  title);
+                            }
+                          }
+                          await updateAllData();
+
+                          notification();
+
+                          Navigator.of(context).pop();
+                        }
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: widget.classRoom.uiColor,
+                        minimumSize: Size(150, 50),
+                      ),
+                    )
+                  ],
+                ))
+          ],
         ));
+  }
+
+  Future<void> notification() async {
+    var headers = {
+      'Authorization':
+          'key=AAAAnCkngvc:APA91bFeaqmC8e3k9_xrnqaB1-Ss6QEnbwe_T8uE9gOdVxuUOgtP5OAeM74CpklVJzidgup_XDlKS45lRro0WfdCcxXLX_9kehI_59qHk_YYnJNwNZQIzZLNi8gnnlZ1uMgJweXZj6Gb',
+      'Content-Type': 'application/json'
+    };
+    var request =
+        http.Request('POST', Uri.parse('https://fcm.googleapis.com/fcm/send'));
+    request.body = json.encode({
+      "to": "/topics/CLASS_${widget.classRoom.className}",
+      "notification": {"title": title, "body": description},
+      "data": {"title": title, "body": description, "message": description}
+    });
+    request.headers.addAll(headers);
+
+    final response = await request.send();
+
+    if (response.statusCode == 200) {
+      print(await response.stream.bytesToString());
+    } else {
+      print(response.reasonPhrase);
+    }
   }
 }
